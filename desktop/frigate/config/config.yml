@@ -1,0 +1,62 @@
+# NOTE on env substitution: Frigate ONLY resolves {FRIGATE_*}-style placeholders
+# (not Docker Compose's ${VAR} syntax) and ONLY in specific fields it documents
+# (mqtt host/user/password, rtsp credentials, go2rtc rtsp.username/password,
+# genai api_key). Set real environment variables on the frigate container (e.g.
+# in docker-compose.yml's `environment:` block, sourced from your real .env) and
+# these two lines below will resolve automatically on container start - no
+# manual edit needed for the MQTT password.
+#
+# The go2rtc stream URL below is NOT a documented substitution field (it's a
+# bare host:port, not a username/password), so YOUR_LAPTOP_IP and
+# YOUR_CAMERA_DEVICE_NAME still need a one-time manual edit after cloning -
+# see README.md.
+
+mqtt:
+  enabled: true
+  host: mosquitto
+  port: 1883
+  user: "{FRIGATE_MQTT_USERNAME}"
+  password: "{FRIGATE_MQTT_PASSWORD}"
+
+tls:
+  enabled: false
+
+go2rtc:
+  streams:
+    your_camera:
+      - rtsp://YOUR_LAPTOP_IP:8554/YOUR_CAMERA_DEVICE_NAME
+
+cameras:
+  # MANUAL EDIT: "your_camera" below is a YAML key - rename it to your own
+  # camera's label (must match laptop/go2rtc.yaml and the HA files exactly).
+  your_camera:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/your_camera
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 480
+      fps: 5
+    record:
+      enabled: true
+
+record:
+  enabled: true
+  continuous:
+    days: 3
+  motion:
+    days: 7
+  alerts:
+    retain:
+      days: 14
+      mode: motion
+  detections:
+    retain:
+      days: 14
+      mode: motion
+version: 0.17-0

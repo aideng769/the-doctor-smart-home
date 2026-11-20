@@ -1,0 +1,70 @@
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - ./homeassistant:/config
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+    depends_on:
+      - mosquitto
+
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    restart: unless-stopped
+
+  whisper:
+    container_name: whisper
+    image: rhasspy/wyoming-whisper
+    restart: unless-stopped
+    ports:
+      - "10300:10300"
+    volumes:
+      - ./whisper-data:/data
+    command: --model base --language en
+
+  piper:
+    container_name: piper
+    image: rhasspy/wyoming-piper
+    restart: unless-stopped
+    ports:
+      - "10200:10200"
+    volumes:
+      - ./piper-data:/data
+    command: --voice en_US-lessac-medium
+
+  frigate:
+    container_name: frigate
+    restart: unless-stopped
+    stop_grace_period: 30s
+    image: ghcr.io/blakeblackshear/frigate:stable
+    shm_size: "256mb"
+    environment:
+      # Pulled from .env (in this same folder) by Docker Compose automatically.
+      # Frigate's own config.yml then resolves its {FRIGATE_*} placeholders
+      # from these at container start - no manual edit needed for these two.
+      - FRIGATE_MQTT_USERNAME=${MQTT_USERNAME}
+      - FRIGATE_MQTT_PASSWORD=${MQTT_PASSWORD}
+    volumes:
+      - ./frigate/config:/config
+      - ./frigate/storage:/media/frigate
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "8971:8971"
+      - "8554:8554"
+      - "8555:8555/tcp"
+      - "8555:8555/udp"
+    depends_on:
+      - mosquitto

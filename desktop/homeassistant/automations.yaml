@@ -1,0 +1,156 @@
+# NOTE on env substitution: Home Assistant's !secret works only on a whole
+# plain YAML value (e.g. `entity_id: !secret nanoleaf_entity_id`) - it cannot
+# resolve a secret embedded inside a Jinja template STRING. So:
+#   - the three `entity_id: light...` lines below DO use !secret and resolve
+#     automatically from secrets.yaml, no manual edit needed.
+#   - the desktop IP (inside the image URL template), the phone notify
+#     service name, and the `state_attr('light...')` call inside the Nanoleaf
+#     Scene Set automation's Jinja template are each flagged "MANUAL EDIT"
+#     below and must be hand-edited after cloning - see README.md.
+
+- id: '1788518020867'
+  # MANUAL EDIT: "your_camera" in the alias/description below is cosmetic -
+  # rename to your own camera's name if you like, doesn't need to match
+  # anything else (unlike the rest_command call below, which does).
+  alias: Frigate Motion Notification - your_camera
+  description: Sends a phone notification when Frigate detects something on the
+    your_camera camera
+  triggers:
+  - topic: frigate/reviews
+    trigger: mqtt
+  conditions:
+  - condition: template
+    value_template: '{{ trigger.payload_json[''type''] == ''new'' }}'
+  actions:
+  - data:
+      title: Motion detected
+      message: '{{ trigger.payload_json[''after''][''severity''] | capitalize }} on
+        {{ trigger.payload_json[''after''][''camera''] }}'
+      data:
+        # MANUAL EDIT: replace YOUR_DESKTOP_IP with your desktop's real LAN IP.
+        # Can't use !secret here - it's inside a Jinja template string, not a
+        # plain YAML value.
+        image: http://YOUR_DESKTOP_IP:8123/api/frigate/notifications/{{ trigger.payload_json['after']['id']
+          }}/thumbnail.jpg
+        tag: '{{ trigger.payload_json[''after''][''id''] }}'
+    # MANUAL EDIT: replace with your own HA Companion App notify service name
+    # (Developer Tools -> Actions, search "notify" to find yours).
+    action: notify.mobile_app_YOUR_PHONE_NAME
+  mode: single
+- id: '1788597321020'
+  alias: manual clip automation
+  description: ''
+  triggers:
+  - trigger: conversation
+    command:
+    - clip
+    - record that
+    - save footage
+    - clip that
+    - add media
+    - save that
+  conditions: []
+  actions:
+  # MANUAL EDIT: must match the rest_command name in configuration.yaml exactly.
+  - action: rest_command.frigate_clip_your_camera
+    metadata: {}
+    data: {}
+  - set_conversation_response: '{{ ["very well sir.", "footage saved", "clip recorded",
+      "Absolutely", "Affirmative", "Request fullfilled"] | random }}'
+  mode: single
+- id: '1788601875633'
+  alias: light automation
+  description: ''
+  triggers:
+  - trigger: conversation
+    command:
+    - turn the lights on
+    - turn the lights off
+    - lights on
+    - lights off
+    - turn on the lights
+    - turn off the lights
+    - turn on lights
+    - turn off lights
+  conditions: []
+  actions:
+  - action: light.toggle
+    metadata: {}
+    target:
+      entity_id: !secret nanoleaf_entity_id
+    data: {}
+  - set_conversation_response: '{{ ["As you wish.", "Absolutely, sir.", "Lights adjusted",
+      "Yes, sir.", "Very well", "Affirmative", "Request fullfilled"] | random }}'
+  mode: single
+- id: '1790402717742'
+  alias: Nanoleaf Brightness Set
+  description: Sets Nanoleaf brightness to a percentage by voice
+  triggers:
+  - command:
+    - 'set brightness to {level} '
+    - 'set lights to {level} '
+    - brightness {level} percent
+    - lights to {level} percent
+    trigger: conversation
+  conditions: []
+  actions:
+  - target:
+      entity_id: !secret nanoleaf_entity_id
+    data:
+      brightness_pct: '{{ level_clamped }}'
+    action: light.turn_on
+  - set_conversation_response: Brightness set to {{ level_clamped }} percent.
+  variables:
+    raw: '{{ trigger.slots.level | string | lower | trim }}'
+    digits: '{{ raw | regex_findall(''\d+'') }}'
+    word_map:
+      zero: 0
+      ten: 10
+      twenty: 20
+      thirty: 30
+      forty: 40
+      fifty: 50
+      sixty: 60
+      seventy: 70
+      eighty: 80
+      ninety: 90
+      hundred: 100
+    parsed: '{{ digits[0] | int if digits else word_map.get(raw, 50) }}'
+    level_clamped: '{{ [[parsed | int, 0] | max, 100] | min }}'
+  mode: single
+- id: '1790402901989'
+  alias: Nanoleaf Scene Set
+  description: Switches Nanoleaf to a named scene by voice, matched against installed
+    scenes
+  triggers:
+  - command:
+    - set scene to {scene}
+    - switch to {scene} scene
+    - switch to the {scene} scene
+    - set the lights to {scene}
+    trigger: conversation
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ matched not in [none, ''None'', ''''] }}'
+      sequence:
+      - target:
+          entity_id: !secret nanoleaf_entity_id
+        data:
+          effect: '{{ matched }}'
+        action: light.turn_on
+      - set_conversation_response: Switched to {{ matched }}.
+    default:
+    - set_conversation_response: No such scene, sir.
+  variables:
+    spoken: '{{ trigger.slots.scene | string | lower | trim }}'
+    # MANUAL EDIT: replace YOUR_NANOLEAF_ENTITY_ID below with the same entity
+    # ID stored in secrets.yaml's nanoleaf_entity_id. Can't use !secret here -
+    # it's inside a Jinja template string, not a plain YAML value.
+    scenes: '{{ state_attr(''light.YOUR_NANOLEAF_ENTITY_ID'', ''effect_list'') or [] }}'
+    matched: "{% set ns = namespace(found=none) %} {% for s in scenes %}\n  {% if
+      s | lower == spoken %}\n    {% set ns.found = s %}\n  {% endif %}\n{% endfor
+      %} {{ ns.found }}"
+  mode: single

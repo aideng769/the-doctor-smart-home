@@ -1,0 +1,51 @@
+# Real secrets/config — never commit. Only *.example files are tracked.
+.env
+.env.*
+!.env.example
+vpn/.env
+
+# Home Assistant actual secrets
+**/secrets.yaml
+**/secrets.yml
+
+# Mosquitto's actual password hash file
+desktop/mosquitto/config/passwd
+
+# Frigate's internal state, database, cache, JWT secret, recordings/exports
+desktop/frigate/config/.jwt_secret
+desktop/frigate/config/.exports
+desktop/frigate/config/.search_stats.json
+desktop/frigate/config/.timeline
+desktop/frigate/config/.vacuum
+desktop/frigate/config/backup.db
+desktop/frigate/config/frigate.db*
+desktop/frigate/config/model_cache/
+desktop/frigate/storage/
+
+# Home Assistant internal state/history — tokens, DB, logs, caches
+desktop/homeassistant/.storage/
+desktop/homeassistant/.cache/
+desktop/homeassistant/.cloud/
+desktop/homeassistant/deps/
+desktop/homeassistant/tts/
+desktop/homeassistant/*.log*
+desktop/homeassistant/*.db
+desktop/homeassistant/*.db-shm
+desktop/homeassistant/*.db-wal
+desktop/homeassistant/.HA_VERSION
+desktop/homeassistant/.ha_run.lock
+# Third-party Frigate integration — downloaded per README, not committed
+desktop/homeassistant/custom_components/frigate/
+
+# Whisper/Piper downloaded model data
+desktop/whisper-data/
+desktop/piper-data/
+
+# Runtime state files (laptop side)
+satellite-state.txt
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc

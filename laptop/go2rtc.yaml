@@ -1,0 +1,34 @@
+# NOTE on env substitution: go2rtc supports ${VAR} / ${VAR:default} syntax,
+# resolved from real OS environment variables at startup (documented for
+# streams URLs and rtsp.username/rtsp.password). This is go2rtc's OWN
+# mechanism, NOT Docker Compose's .env loading - go2rtc runs as a native
+# Windows binary here, so nothing reads this repo's .env automatically.
+# To make ${CAMERA_DEVICE_NAME} etc. resolve, set them as real Windows
+# environment variables yourself before starting go2rtc (System Properties ->
+# Environment Variables, or `[Environment]::SetEnvironmentVariable(...)` in
+# PowerShell) - using the same values you put in your local .env.
+#
+# api.username/api.password substitution is NOT confirmed in go2rtc's docs
+# (only the streams URL and top-level rtsp: block are documented) - if it
+# doesn't resolve for you, hand-edit those two lines directly instead.
+
+ffmpeg:
+  bin: C:\VoiceAssistant\ffmpeg.exe
+
+streams:
+  # MANUAL EDIT: "your_camera" is a YAML key here, not a value - go2rtc's
+  # ${VAR} substitution can't fill in a key name. Rename to your own camera's
+  # label (lowercase, no spaces) and make the SAME rename in
+  # desktop/frigate/config/config.yml and desktop/homeassistant/automations.yaml
+  # + configuration.yaml, wherever "your_camera" appears - all must match.
+  your_camera:
+    - ffmpeg:device?video=${CAMERA_DEVICE_NAME}&video_size=1920x1080&framerate=30#video=h264
+
+api:
+  listen: "0.0.0.0:1984"
+  username: "${GO2RTC_USERNAME}"
+  password: "${GO2RTC_PASSWORD}"
+  local_auth: true
+
+rtsp:
+  listen: "0.0.0.0:8554"
