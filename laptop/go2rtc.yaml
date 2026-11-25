@@ -13,7 +13,7 @@
 # doesn't resolve for you, hand-edit those two lines directly instead.
 
 ffmpeg:
-  bin: C:\VoiceAssistant\ffmpeg.exe
+  bin: ${VOICE_ASSISTANT_ROOT}\ffmpeg.exe
 
 streams:
   # MANUAL EDIT: "your_camera" is a YAML key here, not a value - go2rtc's

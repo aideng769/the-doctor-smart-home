@@ -37,6 +37,13 @@ desktop/homeassistant/.ha_run.lock
 # Third-party Frigate integration — downloaded per README, not committed
 desktop/homeassistant/custom_components/frigate/
 
+# Mosquitto runtime state (logs contain client IPs/usernames)
+desktop/mosquitto/data/
+desktop/mosquitto/log/
+
+# HA banned-IP list
+desktop/homeassistant/ip_bans.yaml
+
 # Whisper/Piper downloaded model data
 desktop/whisper-data/
 desktop/piper-data/

@@ -5,8 +5,9 @@ import random
 
 # ── Settings ─────────────────────────────────────────────────────────────
 FRAME_RATE = 30
-FRAMES_ROOT = r"C:\VoiceAssistant\frames"
-STATE_FILE = r"C:\VoiceAssistant\satellite-state.txt"
+VOICE_ASSISTANT_ROOT = os.environ.get("VOICE_ASSISTANT_ROOT", r"C:\VoiceAssistant")
+FRAMES_ROOT = os.path.join(VOICE_ASSISTANT_ROOT, "frames")
+STATE_FILE = os.path.join(VOICE_ASSISTANT_ROOT, "satellite-state.txt")
 
 
 def load_frames(folder, screen_size):

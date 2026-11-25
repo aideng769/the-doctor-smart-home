@@ -1,2 +1,3 @@
 #!/bin/bash
-echo "$1" > /mnt/c/VoiceAssistant/satellite-state.txt
+VOICE_ASSISTANT_ROOT="${VOICE_ASSISTANT_ROOT:-/mnt/c/VoiceAssistant}"
+echo "$1" > "$VOICE_ASSISTANT_ROOT/satellite-state.txt"

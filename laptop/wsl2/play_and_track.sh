@@ -1,5 +1,6 @@
 #!/bin/bash
-STATE_FILE=/mnt/c/VoiceAssistant/satellite-state.txt
+VOICE_ASSISTANT_ROOT="${VOICE_ASSISTANT_ROOT:-/mnt/c/VoiceAssistant}"
+STATE_FILE="$VOICE_ASSISTANT_ROOT/satellite-state.txt"
 PENDING_IDLE=/tmp/pending-idle.pid
 
 # Cancel any pending "return to idle" timer left by the previous chunk
