@@ -52,10 +52,13 @@ Docker) → Frigate (detection/recording) → Home Assistant.
 | `desktop/frigate/config/config.yml` | Desktop | Frigate's camera/detection/recording config |
 | `desktop/homeassistant/*.yaml` | Desktop | HA's own configuration, automations, secrets |
 | `desktop/mosquitto/config/mosquitto.conf` | Desktop | MQTT broker config |
+| `desktop/ollama-setup.md` | Desktop | Ollama install, model, and the two-agent conversation setup |
 | `laptop/go2rtc.yaml` | Laptop | Native go2rtc — captures the webcam, serves RTSP |
 | `laptop/eye.py` | Laptop | Pygame animation, reads the shared satellite-state file |
 | `laptop/.wslconfig` | Laptop | WSL2 memory limit |
 | `laptop/wsl2/*.sh` | Laptop (inside WSL2) | Wake word + voice satellite launch/state scripts |
+| `vpn/*.ps1` | Desktop | Starts/stops the Tailscale subnet router for remote access |
+| `docs/vpn-plan.md` | — | Full VPN build plan, architecture, and day-to-day usage policy |
 
 ---
 
@@ -121,8 +124,7 @@ actually invoked here evidently makes it behave correctly despite its appearance
 
 ## 7. What's *not* in this repo (yet, or at all)
 
-- **Tailscale VPN / remote access** — fully built and working, documented separately, to be added
-  in a later push.
+- See `desktop/ollama-setup.md` for Ollama's install, model, and the two-agent conversation setup.
 - **Ollama** and the two conversation agents — native install, not yet captured here.
 - **Physical shell design, persona/voice cloning, garage door, Music Assistant** — not part of the
   working system this repo captures; separate project phases.
@@ -140,4 +142,4 @@ actually invoked here evidently makes it behave correctly despite its appearance
 | Voice pipeline (wake word → STT → Sentence triggers → TTS → eye animation) | Working |
 | Frigate camera stack (detection, recording, manual clip-save) | Working |
 | Nanoleaf voice control (toggle, brightness, scene) | Working |
-| Remote access (Tailscale) | Working — repo module added separately |
+| Remote access (Tailscale) | Working |
