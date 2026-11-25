@@ -5,8 +5,8 @@ A fully local, event-driven smart-home voice assistant, aesthetically inspired b
 independent services over MQTT/Wyoming/HTTP/RTSP rather than one monolithic process. Nothing in
 this project is exposed to the public internet.
 
-This README is the clone-and-rebuild reference for the **desktop + laptop** setup. Remote access
-(Tailscale VPN) is a separate module, added in a later push — not covered here yet.
+This README is the clone-and-rebuild reference for the **desktop + laptop** setup, including
+remote access via Tailscale (`vpn/`, `docs/vpn-plan.md`).
 
 ---
 
@@ -36,8 +36,8 @@ Docker) → Frigate (detection/recording) → Home Assistant.
 
 ## 2. Prerequisites
 
-- **Desktop:** Windows, Docker Desktop (WSL2 backend), Ollama installed natively (not in Docker,
-  not covered by the files in this repo yet).
+- **Desktop:** Windows, Docker Desktop (WSL2 backend), Ollama installed natively (not in Docker —
+  see `desktop/ollama-setup.md`).
 - **Laptop:** Windows, WSL2 with an Ubuntu distro, a USB webcam.
 - **Both:** Windows Firewall rules scoped `-Profile Private` — verify `Get-NetConnectionProfile`
   reports `Private` on both machines before relying on any firewall rule.
@@ -77,8 +77,8 @@ pretending everything "just works":
 | `DESKTOP_LAN_IP`, `LAPTOP_LAN_IP`, `LAN_SUBNET` | **Manual edit required.** Not a documented Frigate/HA substitution field. Flagged with `MANUAL EDIT` comments at each line in `config.yml` and `automations.yaml`. |
 | `VOICE_ASSISTANT_ROOT` | **Partially automatic.** Set as a real env var on both sides — Windows (`go2rtc.yaml`, `eye.py`) and separately in WSL2's `~/.bashrc` (the `.sh` scripts) — since Windows env vars aren't visible inside WSL2. If left unset anywhere, falls back to `C:\VoiceAssistant` / `/mnt/c/VoiceAssistant`. |
 | `PHONE_NOTIFY_SERVICE` | **Manual edit required** in `automations.yaml` (embedded inside a Jinja template string — HA's `!secret` can't reach inside one). Find your own value via HA's Developer Tools → Actions, search "notify". |
-| `NANOLEAF_ENTITY_ID` | **Partially automatic.** Copy this value into `desktop/homeassistant/secrets.yaml`'s `nanoleaf_entity_id:` line — three of the four references in `automations.yaml` use `!secret nanoleaf_entity_id` and resolve from there automatically. One reference (inside a Jinja `state_attr(...)` call) is flagged `MANUAL EDIT` and needs the same value typed in directly, since `!secret` can't resolve inside a template string either. |
-| `HA_SECRETS_SOME_PASSWORD` | Present in `secrets.yaml` as a placeholder; not currently referenced by `!secret` anywhere in this repo's `configuration.yaml`/`automations.yaml` — confirm on your own system whether anything still uses it before relying on it. |
+| `NANOLEAF_ENTITY_ID` | **Partially automatic.** Copy this value into `desktop/homeassistant/secrets_example.yaml`'s `nanoleaf_entity_id:` line — three of the four references in `automations.yaml` use `!secret nanoleaf_entity_id` and resolve from there automatically. One reference (inside a Jinja `state_attr(...)` call) is flagged `MANUAL EDIT` and needs the same value typed in directly, since `!secret` can't resolve inside a template string either. |
+| `HA_SECRETS_SOME_PASSWORD` | Present in `secrets_example.yaml` as a placeholder; not currently referenced by `!secret` anywhere in this repo's `configuration.yaml`/`automations.yaml` — confirm on your own system whether anything still uses it before relying on it. |
 
 Every manual-edit spot is also marked with a `# MANUAL EDIT` comment directly in the file it's in
 — `.env` is the reference for *what* to type, the comment in the file is *where*.
@@ -125,7 +125,6 @@ actually invoked here evidently makes it behave correctly despite its appearance
 ## 7. What's *not* in this repo (yet, or at all)
 
 - See `desktop/ollama-setup.md` for Ollama's install, model, and the two-agent conversation setup.
-- **Ollama** and the two conversation agents — native install, not yet captured here.
 - **Physical shell design, persona/voice cloning, garage door, Music Assistant** — not part of the
   working system this repo captures; separate project phases.
 - `custom_components/frigate/` — third-party code, downloaded per step 4 above, not committed.
